@@ -1,1 +1,1 @@
-#!/bin/pyhton3.7
+#!/bin/python3.7
