@@ -41,18 +41,27 @@ for line in p.textRegion.findall("bergamo:TextLine", p.ns):
 # Compute baseline distance wrt the left textbox border
 lineLengths = []
 lineDistFromLeft = []
+yCoordsAllPoints = []
 for item in linesBaseline:
     xyPoints = getXYPoints(linesBaseline[item])
-    lineLengths.append(math.sqrt((xyPoints[-1][0] - xyPoints[0][0])**2 + (xyPoints[-1][1] - xyPoints[0][1])**2)) # distance = sqrt((x2-x1)^2 + (y2-y1)^2)
+    yCoordsAllPoints.append(xyPoints[0][1])
+    lineLengths.append(math.sqrt((xyPoints[-1][0] - xyPoints[0][0])**2 + (xyPoints[-1][1] - xyPoints[0][1])**2)) # length = sqrt((x2-x1)^2 + (y2-y1)^2)
     lineDistFromLeft.append(np.abs((textRegionPoints[0][1] - textRegionPoints[1][1])*xyPoints[0][0] +
                             textRegionPoints[0][0]*textRegionPoints[1][1] -
                             textRegionPoints[0][1]*textRegionPoints[1][0])/leftBorderLength) # wiki formula
 
-plt.hist(lineLengths, bins='auto')
+longLines = np.where(np.array(lineLengths) > int(max(lineLengths)/2)) # lines too short
+
+for y in longLines[0]:
+
+
+plt.figure(0)
+plt.hist(lineLengths, bins=100)
 plt.title("Histogram of baseline lengths")
 plt.show()
 
-plt.hist(lineDistFromLeft, bins='auto')
+plt.figure(1)
+plt.hist(lineDistFromLeft, bins=100)
 plt.title("Histogram of baseline distances from left textbox border")
 plt.show()
 
