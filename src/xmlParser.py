@@ -10,8 +10,8 @@ class XmlParser:
         self.root = ET.parse(document).getroot()
 
     def findTextRegion(self):
-        self.ns = {"bergamo": "http://schema.primaresearch.org/PAGE/gts/pagecontent/2013-07-15"}
-        self.textRegion = self.root.findall("bergamo:Page/bergamo:TextRegion", self.ns)[0]
+        self.ns = {"manuscript": "http://schema.primaresearch.org/PAGE/gts/pagecontent/2013-07-15"}
+        self.textRegion = self.root.findall("manuscript:Page/manuscript:TextRegion", self.ns) #[0]
 
     # def processTextLine(self):
     #     self.textRegionCoords = self.textRegion.findall("bergamo:Coords", self.ns)[0].attrib['points']
