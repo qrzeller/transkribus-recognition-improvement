@@ -14,7 +14,7 @@ from collections import OrderedDict
 # lines that are short AND close to the textbox border should be merged to the closest one on the Ox axis
 # other problematic lines should be removed
 
-p = XmlParser('./data/xml-sample/new_493_PARIS_01.xml')
+p = XmlParser('../data/xml-sample/new_493_PARIS_01.xml')
 
 root = p.root
 p.findTextRegion()
@@ -38,11 +38,18 @@ hMax = max(horizontalBorderLength)
 vMax = max(verticalBorderLength)
 margin = 0.9
 for i in range(len(p.textRegion)):
-    if (verticalBorderLength[i] < margin*vMax) & (horizontalBorderLength < margin*hMax):
-        root.remove(textRegion[i])
+    if (verticalBorderLength[i] < margin*vMax) & (horizontalBorderLength[i] < margin*hMax):
+        print(i)
+        p.removeTR(p.textRegion[i])
+
+pp = p.prettyPrintTo("./test2.xml")
 
 
 
+
+
+
+"""
 
 # Get info about text lines
 linesCoords = OrderedDict()
@@ -125,3 +132,4 @@ for l in range(len(idxMerge)):
 
 # hist, bin_edges = np.histogram(lineLengths)
 
+"""
