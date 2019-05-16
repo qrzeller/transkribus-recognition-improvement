@@ -36,10 +36,10 @@ class XmlParser:
     def prettyPrintTo(self, fileDest):
         self.doc.write(fileDest)
 
-    def removeTL(self, textRegion, textLine):
-        print("Removed line : ", textLine.attrib['id'])
-        textRegion.remove(textLine)
-
-    # def removeTL(self, textRegionIdx, textLine):
+    # def removeTL(self, textRegion, textLine):
     #     print("Removed line : ", textLine.attrib['id'])
-    #     self.textRegion[textRegionIdx].remove(textLine)
+    #     textRegion.remove(textLine)
+
+    def removeTL(self, textRegionIdx, textLine):
+        print("Removed line : ", textLine.attrib['id'])
+        self.textRegion[textRegionIdx].remove(textLine)
