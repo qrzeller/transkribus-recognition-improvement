@@ -3,14 +3,14 @@ from src.transkribusServer import TrtanskribusServer
 from src.xmlParser import XmlParser
 
 credentials = {'user': "quentin.zeller@etu.unige.ch", 'password': "pttptt3*"}
-documentsInfo = {'colId': 35875, 'docId': 135607}
+documentsInfo = {'colId': 35875, 'docId': 163227}
 
 ts = TrtanskribusServer(credentials['user'], credentials['password'], colId=documentsInfo['colId'])
 docList, docId = ts.list_documents()
 # parse doc from the server (specific document)
 pages = ts.get_documents(documentsInfo['docId'])
 
-for npage in range(len(pages)):
+for npage in range(11):#range(len(pages)):
     p_test = pages[npage]
     print("Page number %d ----------- " % npage)
 

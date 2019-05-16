@@ -24,7 +24,7 @@ def getTextRegionInfo(textRegionIdx, p):
     textRegionPoints = getXYPoints(textRegionCoords)
     # print('textRegionPoints', textRegionPoints)
     verticalBorderLength = np.abs(textRegionPoints[0][1] - textRegionPoints[1][1]) # use only y-points, the textbox is rectangular
-    horizontalBorderLength = np.abs(textRegionPoints[0][0] - textRegionPoints[1][0]) # use only x-points, the textbox is rectangular
+    horizontalBorderLength = np.abs(textRegionPoints[0][0] - textRegionPoints[-1][0]) # use only x-points, the textbox is rectangular
     return textRegionPoints, verticalBorderLength, horizontalBorderLength
 
 def evaluateTextRegions(p): # remove text regions that are too small
