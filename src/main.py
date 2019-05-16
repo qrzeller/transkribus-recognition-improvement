@@ -64,47 +64,56 @@ def getLinesInfo(textRegionIdx, p):
     _, linesBaseline = getLinesPoints(textRegionIdx, p)
     # Compute lengths of baselines, check the histogram, mark the very short ones as problematic
     # Compute baseline distance wrt the left textbox border
+
+    lineYCoords = []     # needed to compute interline distance further on
+    lineXCoords = []
     lineLengths = []
-    lineDistFromLeft = []
-    lineYCoords = [] # needed to compute interline distance further on
     for item in linesBaseline:
         xyPoints = getXYPoints(linesBaseline[item])
         lineYCoords.append(xyPoints[0][1])
-        lineLengths.append(math.sqrt((xyPoints[-1][0] - xyPoints[0][0])**2 + (xyPoints[-1][1] - xyPoints[0][1])**2)) # length = sqrt((x2-x1)^2 + (y2-y1)^2)
-        lineDistFromLeft.append(np.abs((textRegionPoints[0][1] - textRegionPoints[1][1])*xyPoints[0][0] +
-                                textRegionPoints[0][0]*textRegionPoints[1][1] -
-                                textRegionPoints[0][1]*textRegionPoints[1][0]) / verticalBorderLength) # wiki formula
-    # print('verticalBorderLength', verticalBorderLength)
-    return lineYCoords, lineLengths, lineDistFromLeft
+        lineXCoords.append([xyPoints[0][0], xyPoints[-1][0]])
+        lineLengths.append(math.sqrt((xyPoints[-1][0] - xyPoints[0][0]) ** 2 + (
+                    xyPoints[-1][1] - xyPoints[0][1]) ** 2))  # length = sqrt((x2-x1)^2 + (y2-y1)^2)
+
+    lineDistFromLeft = []
+    medianX = np.median([xPoint[0] for xPoint in lineXCoords])
+    for i in range(len(lineLengths)):
+        lineDistFromLeft.append(np.abs(medianX - lineXCoords[i][0])) # textRegionPoints[0][0]
+
+    return lineYCoords, lineLengths, lineDistFromLeft, lineXCoords
 
 def getShortLongLines(textRegionIdx, p, factor = 2):
-    _, lineLengths, _ = getLinesInfo(textRegionIdx, p)
+    _, lineLengths, _, _ = getLinesInfo(textRegionIdx, p)
     shortLines = np.where(np.array(lineLengths) < int(max(lineLengths)/factor)) # lines too short
     longLines = np.where(np.array(lineLengths) > int(max(lineLengths) / factor)) # long lines
     return shortLines, longLines
 
 def farFromBorderLines(textRegionIdx, p, factor = 4):
-    _, _, lineDistFromLeft = getLinesInfo(textRegionIdx, p)
+    _, _, lineDistFromLeft, _ = getLinesInfo(textRegionIdx, p)
     # print('lineDistFromLeft', lineDistFromLeft)
     problemLinesDistance = np.where(np.array(lineDistFromLeft) > int(max(lineDistFromLeft)/factor)) # lines too far away from the left textborder
     return problemLinesDistance
 
-def linesToMergeOrLabel(textRegionIdx, p):
-    shortLines, longLines = getShortLongLines(textRegionIdx, p, factor = 2)
-    farLines = farFromBorderLines(textRegionIdx, p, factor = 4)
-    linesToTagComment = np.intersect1d(shortLines, farLines)
-    linesToMerge = np.setdiff1d(shortLines, farLines)
-    # print('shortLines', shortLines)
-    # print('farLines', farLines)
-    # print('linesToTagComment', linesToTagComment)
-    # print('linesToMerge', linesToMerge)
-    return linesToMerge, linesToTagComment
+# def linesToMergeOrLabel(textRegionIdx, p):
+#     shortLines, longLines = getShortLongLines(textRegionIdx, p, factor = 2)
+#     farLines = farFromBorderLines(textRegionIdx, p, factor = 4)
+#     linesToTagComment = np.intersect1d(shortLines, farLines)
+#     linesToMerge = np.setdiff1d(shortLines, farLines)
+#     # print('shortLines', shortLines)
+#     # print('farLines', farLines)
+#     # print('linesToTagComment', linesToTagComment)
+#     # print('linesToMerge', linesToMerge)
+#     return linesToMerge, linesToTagComment
 
-def matchLongLinesForMerge(textRegionIdx, p):
-    linesToMerge, _ = linesToMergeOrLabel(textRegionIdx, p)
-    _, longLines = getShortLongLines(textRegionIdx, p, factor=2)
+def linesToMergeOrLabel(textRegionIdx, p):
+
+    shortLines, longLines = getShortLongLines(textRegionIdx, p, factor=2)
+    farLines = farFromBorderLines(textRegionIdx, p, factor=4)
+    linesToLabel = list(np.intersect1d(shortLines, farLines))
+    linesToMerge = list(np.setdiff1d(shortLines, farLines))
+
     _, verticalBorderLength, _ = getTextRegionInfo(textRegionIdx, p)
-    lineYCoords, _, _ = getLinesInfo(textRegionIdx, p)
+    lineYCoords, _, _, lineXCoords  = getLinesInfo(textRegionIdx, p)
 
     idxPrevLongLine = []
     idxNextLongLine = []
@@ -125,23 +134,25 @@ def matchLongLinesForMerge(textRegionIdx, p):
             idxNextLongLine.append(longLines[0][np.argmax(longLines[0] > lineIdx)])
             distNextLongLine.append(np.abs(lineYCoords[lineIdx] - lineYCoords[idxNextLongLine[-1]]))
 
-    # print('linesToMerge', linesToMerge)
-    # print('longLines', longLines)
-    # print('idxPrevLongLine', idxPrevLongLine)
-    # print('idxNextLongLine', idxNextLongLine)
-    # print('distPrevLongLine', distPrevLongLine)
-    # print('distNextLongLine', distNextLongLine)
     idxMerge = [idxPrevLongLine[i] if distPrevLongLine[i] < distNextLongLine[i] else idxNextLongLine[i] for i in range(len(distNextLongLine))]
 
-    return idxMerge
+    for i in range(len(idxMerge)):
+        if lineXCoords[linesToMerge[i]][1] > lineXCoords[idxMerge[i]][0]:
+            linesToMerge[i] = None
+            idxMerge[i] = None
+            linesToLabel.append(linesToMerge[i])
 
-def mergeLinesBaselines(textRegionIdx, p): # merges small lines to long lines and removes the smaller line
-    idxMerge = matchLongLinesForMerge(textRegionIdx, p)
+    linesToMerge = [line for line in linesToMerge if line is not None]
+    idxMerge = [line for line in idxMerge if line is not None]
+
+    return linesToMerge, idxMerge, linesToLabel
+
+def mergeCommentLines(textRegionIdx, p): # merges small lines to long lines and removes the smaller line
+    linesToMerge, idxMerge, linesToLabel = linesToMergeOrLabel(textRegionIdx, p)
     if len(idxMerge) > len(set(idxMerge)):
         print('Attention: long line matches multiple merges')
 
     linesCoords, linesBaseline = getLinesPoints(textRegionIdx, p)
-    linesToMerge, _ = linesToMergeOrLabel(textRegionIdx, p)
 
     linesToRemove = []
     for l in range(len(idxMerge)):
@@ -154,23 +165,17 @@ def mergeLinesBaselines(textRegionIdx, p): # merges small lines to long lines an
         linesToRemove.append(linesToMerge[l])
     # print('linesToMerge', linesToMerge)
 
-    # i = 0
     for line in p.textRegion[textRegionIdx].findall("manuscript:TextLine", p.ns):
         i = int(re.findall(r'\d+', line.get("custom"))[0])
         line[0].attrib['points'] = linesCoords[i]
         line[1].attrib['points'] = linesBaseline[i]
         if i in linesToRemove:
             p.removeTL(textRegionIdx, line)
-        # i += 1
 
-def addCommentLabels(textRegionIdx, p): # merges small lines to long lines and removes the smaller line
-    _, linesToLabel = linesToMergeOrLabel(textRegionIdx, p)
-    # i = 0
     for line in p.textRegion[textRegionIdx].findall("manuscript:TextLine", p.ns):
         i = int(re.findall(r'\d+', line.get("custom"))[0])
         if i in linesToLabel:
             line.set("custom", line.get("custom") + 'structure {type:footnote;}')
-        # i += 1
 
 def extendBaselines(textRegionIdx, p): # not currently used
     textRegionPoints = getTextRegionInfo(textRegionIdx, p)
@@ -181,7 +186,7 @@ def extendBaselines(textRegionIdx, p): # not currently used
 def computeInterDistance(textRegionIdx, p): # not currently used
     # typical interline distance based on long lines only
     _, longLines = getShortLongLines(textRegionIdx, p, factor = 2)
-    lineYCoords, _, _ = getLinesInfo(textRegionIdx, p)
+    lineYCoords, _, _, _  = getLinesInfo(textRegionIdx, p)
     interDistance = round(np.mean(np.diff([lineYCoords[i] for i in longLines[0]])))
     return interDistance
 

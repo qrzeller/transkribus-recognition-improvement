@@ -1,9 +1,9 @@
-from src.main import evaluateTextRegions, addCommentLabels, mergeLinesBaselines
+from src.main import evaluateTextRegions, mergeCommentLines
 from src.transkribusServer import TrtanskribusServer
 from src.xmlParser import XmlParser
 
 credentials = {'user': "quentin.zeller@etu.unige.ch", 'password': "pttptt3*"}
-documentsInfo = {'colId': 35875, 'docId': 163227}
+documentsInfo = {'colId': 35875, 'docId': 163267}
 
 ts = TrtanskribusServer(credentials['user'], credentials['password'], colId=documentsInfo['colId'])
 docList, docId = ts.list_documents()
@@ -22,8 +22,7 @@ for npage in range(11):#range(len(pages)):
 
     evaluateTextRegions(p)
     for textRegionIdx in range(len(p.textRegion)):
-        addCommentLabels(textRegionIdx, p)
-        mergeLinesBaselines(textRegionIdx, p)
+        mergeCommentLines(textRegionIdx, p)
     p_test = p.toString()
 
     #pp = p.prettyPrintTo("./test2.xml")
