@@ -1,4 +1,6 @@
+from src.main import evaluateTextRegions, addCommentLabels, mergeLinesBaselines
 from src.transkribusServer import TrtanskribusServer
+from src.xmlParser import XmlParser
 
 credentials = {'user': "quentin.zeller@etu.unige.ch", 'password': "pttptt3*"}
 documentsInfo = {'colId': 35875, 'docId': 135607}
@@ -13,6 +15,18 @@ for npage in range(len(pages)):
 
 
     p_test = p_test.replace("CITlab_LA_ML:v=?0.1", "NTIC:v=?0.8")
+
+    p = XmlParser(p_test)
+    root = p.root
+    p.findTextRegion()
+
+    evaluateTextRegions(p)
+    for textRegionIdx in range(len(p.textRegion)):
+        addCommentLabels(textRegionIdx, p)
+        mergeLinesBaselines(textRegionIdx, p)
+    p_test = p.toString()
+    #pp = p.prettyPrintTo("./test2.xml")
+
 
     # p_test = p_test.replace("quentintest", "banane")
     # somecomment = "<!--" \

@@ -7,7 +7,8 @@ class XmlParser:
 
     def __init__(self, document: str):
         print("Init XML Parser")
-        self.doc = ET.parse(document)
+        ##self.doc = ET.parse(document)
+        self.doc = ET.fromstring(document)
         self.root = self.doc.getroot()
 
     def findTextRegion(self):
@@ -36,6 +37,8 @@ class XmlParser:
     def prettyPrintTo(self, fileDest):
         self.doc.write(fileDest)
 
+    def toString(self):
+        return ET.tostring(self.doc)
     # def removeTL(self, textRegion, textLine):
     #     print("Removed line : ", textLine.attrib['id'])
     #     textRegion.remove(textLine)

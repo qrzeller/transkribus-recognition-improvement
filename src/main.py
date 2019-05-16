@@ -181,16 +181,7 @@ def computeInterDistance(textRegionIdx, p): # not currently used
     interDistance = round(np.mean(np.diff([lineYCoords[i] for i in longLines[0]])))
     return interDistance
 
-p = XmlParser('./data/xml-sample/old_24_BERGAMO_08.xml')
-root = p.root
-p.findTextRegion()
 
-evaluateTextRegions(p)
-for textRegionIdx in range(len(p.textRegion)):
-    addCommentLabels(textRegionIdx, p)
-    mergeLinesBaselines(textRegionIdx, p)
-
-pp = p.prettyPrintTo("./test2.xml")
 
 
 # plt.figure(0)
