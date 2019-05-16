@@ -30,7 +30,7 @@ class XmlParser:
         return root.get(node)
 
     def removeTR(self, TR):
-        print(TR.attrib)
+        print('Removed TR: ', TR.attrib)
         self.parentTR.remove(TR)
 
     def prettyPrintTo(self, fileDest):
