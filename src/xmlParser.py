@@ -38,12 +38,8 @@ class XmlParser:
         self.doc.write(fileDest)
 
     def toString(self):
-        s = ET.tostring(self.doc)
-        print(s)
+        s = ET.tostring(self.root, encoding='utf8', method='xml').decode()
         return s
-    # def removeTL(self, textRegion, textLine):
-    #     print("Removed line : ", textLine.attrib['id'])
-    #     textRegion.remove(textLine)
 
     def removeTL(self, textRegionIdx, textLine):
         print("Removed line : ", textLine.attrib['id'])

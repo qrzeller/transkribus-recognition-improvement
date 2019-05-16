@@ -31,6 +31,9 @@ def evaluateTextRegions(p): # remove text regions that are too small
     # Get info about text region boxes
     verticalBorders = []
     horizontalBorders = []
+
+    if len(p.textRegion) == 0: return
+
     for i in range(len(p.textRegion)):
         textRegionPoints, verticalBorderLength, horizontalBorderLength = getTextRegionInfo(i, p)
         verticalBorders.append(verticalBorderLength)
@@ -146,7 +149,7 @@ def mergeLinesBaselines(textRegionIdx, p): # merges small lines to long lines an
         # linesCoords[idxMerge[l]] =
 
         # merge baselines
-        linesBaseline[idxMerge[l]] = linesBaseline[linesToMerge[l]] + linesBaseline[idxMerge[l]]
+        linesBaseline[idxMerge[l]] = linesBaseline[linesToMerge[l]] + " " +linesBaseline[idxMerge[l]]
         # add short merged lines to a list to be removed
         linesToRemove.append(linesToMerge[l])
     # print('linesToMerge', linesToMerge)

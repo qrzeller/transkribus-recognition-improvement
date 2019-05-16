@@ -12,7 +12,7 @@ pages = ts.get_documents(documentsInfo['docId'])
 
 for npage in range(len(pages)):
     p_test = pages[npage]
-    print("Page number %d")
+    print("Page number %d ----------- " % npage)
 
     p_test = p_test.replace("CITlab_LA_ML:v=?0.1", "NTIC:v=?0.8")
 
@@ -25,6 +25,7 @@ for npage in range(len(pages)):
         addCommentLabels(textRegionIdx, p)
         mergeLinesBaselines(textRegionIdx, p)
     p_test = p.toString()
+
     #pp = p.prettyPrintTo("./test2.xml")
 
 

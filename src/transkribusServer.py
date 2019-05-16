@@ -54,7 +54,7 @@ class TrtanskribusServer():
         pageList = trp["pageList"]
         lFileList = []
         self.pages = []
-        for page in pageList['pages']:
+        for page in pageList['pages']: ## TODO
             pagenum = page['pageNr']
             imgFileName = page['imgFileName']
             base, _ = os.path.splitext(imgFileName)
@@ -98,25 +98,25 @@ class TrtanskribusServer():
         self.s.auth_logout()
 
 
-user = "quentin.zeller@etu.unige.ch"
-password = "pttptt3*"
-ts = TrtanskribusServer(user, password, colId = 35875)
-docList, docId = ts.list_documents()
-# parse doc from the server (specific document)
-pages = ts.get_documents(docId[0])
-
-npage = 8
-p_test = pages[npage]
-
-p_test = p_test.replace("quentintest", "banane")
-somecomment = "<!--" \
-              " helloworld " \
-              "-->"
-p_test = p_test + somecomment
-file = open("testfile.xml","w")
-file.write(p_test)
-file.close()
-
-response = ts.uploadDocument(docId[0],npage+1,p_test)
+# user = "quentin.zeller@etu.unige.ch"
+# password = "pttptt3*"
+# ts = TrtanskribusServer(user, password, colId = 35875)
+# docList, docId = ts.list_documents()
+# # parse doc from the server (specific document)
+# pages = ts.get_documents(docId[0])
+#
+# npage = 8
+# p_test = pages[npage]
+#
+# p_test = p_test.replace("quentintest", "banane")
+# somecomment = "<!--" \
+#               " helloworld " \
+#               "-->"
+# p_test = p_test + somecomment
+# file = open("testfile.xml","w")
+# file.write(p_test)
+# file.close()
+#
+# response = ts.uploadDocument(docId[0],npage+1,p_test)
 
 #s.auth_logout()
