@@ -68,6 +68,7 @@ class TrtanskribusServer():
         return self.pages
 
     def uploadDocument(self, docId, pnum, transkript):
+        print("Uploading page %d to document %d" % (pnum, docId))
         respText = self.s.postPageTranscript(self.current_Collection, docId, pnum, transkript)
 
         return respText
