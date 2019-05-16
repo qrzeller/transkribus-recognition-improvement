@@ -39,3 +39,7 @@ class XmlParser:
     def removeTL(self, textRegion, textLine):
         print("Removed line : ", textLine.attrib['id'])
         textRegion.remove(textLine)
+
+    # def removeTL(self, textRegionIdx, textLine):
+    #     print("Removed line : ", textLine.attrib['id'])
+    #     self.textRegion[textRegionIdx].remove(textLine)
