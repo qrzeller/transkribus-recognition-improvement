@@ -12,7 +12,7 @@ pages = ts.get_documents(documentsInfo['docId'])
 
 for npage in range(len(pages)):
     p_test = pages[npage]
-
+    print("Page number %d")
 
     p_test = p_test.replace("CITlab_LA_ML:v=?0.1", "NTIC:v=?0.8")
 

@@ -37,6 +37,7 @@ def evaluateTextRegions(p): # remove text regions that are too small
         horizontalBorders.append(horizontalBorderLength)
 
     # Remove textbox that is too small on both x and y dimensions
+
     hMax = max(horizontalBorders)
     vMax = max(verticalBorders)
     margin = 0.9
