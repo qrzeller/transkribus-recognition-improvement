@@ -121,12 +121,12 @@ def matchLongLinesForMerge(textRegionIdx, p):
             idxNextLongLine.append(longLines[0][np.argmax(longLines[0] > lineIdx)])
             distNextLongLine.append(np.abs(lineYCoords[lineIdx] - lineYCoords[idxNextLongLine[-1]]))
 
-    print('linesToMerge', linesToMerge)
-    print('longLines', longLines)
-    print('idxPrevLongLine', idxPrevLongLine)
-    print('idxNextLongLine', idxNextLongLine)
-    print('distPrevLongLine', distPrevLongLine)
-    print('distNextLongLine', distNextLongLine)
+    # print('linesToMerge', linesToMerge)
+    # print('longLines', longLines)
+    # print('idxPrevLongLine', idxPrevLongLine)
+    # print('idxNextLongLine', idxNextLongLine)
+    # print('distPrevLongLine', distPrevLongLine)
+    # print('distNextLongLine', distNextLongLine)
     idxMerge = [idxPrevLongLine[i] if distPrevLongLine[i] < distNextLongLine[i] else idxNextLongLine[i] for i in range(len(distNextLongLine))]
 
     return idxMerge
