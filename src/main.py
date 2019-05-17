@@ -22,7 +22,6 @@ def getXYPoints(stringList):
 def getTextRegionInfo(textRegionIdx, p):
     textRegionCoords = p.textRegion[textRegionIdx].findall("manuscript:Coords", p.ns)[0].attrib['points']
     textRegionPoints = getXYPoints(textRegionCoords)
-    # print('textRegionPoints', textRegionPoints)
     verticalBorderLength = np.abs(textRegionPoints[0][1] - textRegionPoints[1][1]) # use only y-points, the textbox is rectangular
     horizontalBorderLength = np.abs(textRegionPoints[0][0] - textRegionPoints[-1][0]) # use only x-points, the textbox is rectangular
     return textRegionPoints, verticalBorderLength, horizontalBorderLength
@@ -40,7 +39,6 @@ def evaluateTextRegions(p): # remove text regions that are too small
         horizontalBorders.append(horizontalBorderLength)
 
     # Remove textbox that is too small on both x and y dimensions
-
     hMax = max(horizontalBorders)
     vMax = max(verticalBorders)
     margin = 0.9
@@ -52,11 +50,11 @@ def getLinesPoints(textRegionIdx, p):
     # Get coords and baseline point info about text lines
     linesCoords = OrderedDict()
     linesBaseline = OrderedDict()
-    i = 0
     for line in p.textRegion[textRegionIdx].findall("manuscript:TextLine", p.ns):
+        i = int(re.findall(r'\d+', line.get("custom"))[0])
         linesCoords[i] = line[0].attrib['points'] # line[0] for the coords, line[1] for the baseline; line.get("id")
         linesBaseline[i] = line[1].attrib['points']  # line[0] for the coords, line[1] for the baseline
-        i += 1
+
     return linesCoords, linesBaseline
 
 def getLinesInfo(textRegionIdx, p):
@@ -86,24 +84,14 @@ def getShortLongLines(textRegionIdx, p, factor = 2):
     _, lineLengths, _, _ = getLinesInfo(textRegionIdx, p)
     shortLines = np.where(np.array(lineLengths) < int(max(lineLengths)/factor)) # lines too short
     longLines = np.where(np.array(lineLengths) > int(max(lineLengths) / factor)) # long lines
+
     return shortLines, longLines
 
 def farFromBorderLines(textRegionIdx, p, factor = 4):
     _, _, lineDistFromLeft, _ = getLinesInfo(textRegionIdx, p)
-    # print('lineDistFromLeft', lineDistFromLeft)
     problemLinesDistance = np.where(np.array(lineDistFromLeft) > int(max(lineDistFromLeft)/factor)) # lines too far away from the left textborder
-    return problemLinesDistance
 
-# def linesToMergeOrLabel(textRegionIdx, p):
-#     shortLines, longLines = getShortLongLines(textRegionIdx, p, factor = 2)
-#     farLines = farFromBorderLines(textRegionIdx, p, factor = 4)
-#     linesToTagComment = np.intersect1d(shortLines, farLines)
-#     linesToMerge = np.setdiff1d(shortLines, farLines)
-#     # print('shortLines', shortLines)
-#     # print('farLines', farLines)
-#     # print('linesToTagComment', linesToTagComment)
-#     # print('linesToMerge', linesToMerge)
-#     return linesToMerge, linesToTagComment
+    return problemLinesDistance
 
 def linesToMergeOrLabel(textRegionIdx, p):
 
@@ -167,7 +155,6 @@ def mergeCommentLines(textRegionIdx, p): # merges small lines to long lines and 
 
         # add short merged lines to a list to be removed
         linesToRemove.append(linesToMerge[l])
-    # print('linesToMerge', linesToMerge)
 
     for line in p.textRegion[textRegionIdx].findall("manuscript:TextLine", p.ns):
         i = int(re.findall(r'\d+', line.get("custom"))[0])
@@ -181,10 +168,21 @@ def mergeCommentLines(textRegionIdx, p): # merges small lines to long lines and 
         if i in linesToLabel:
             line.set("custom", line.get("custom") + 'structure {type:footnote;}')
 
-def extendBaselines(textRegionIdx, p): # not currently used
-    textRegionPoints = getTextRegionInfo(textRegionIdx, p)
+def extendBaselines(textRegionIdx, p):
+    _, _, _, lineXCoords = getLinesInfo(textRegionIdx, p)
+    linesCoords, linesBaseline = getLinesPoints(textRegionIdx, p)
+    _, longLines = getShortLongLines(textRegionIdx, p, factor = 2)
+
+    medianX = np.percentile([xPoint[0] for xPoint in lineXCoords], 50)
+    for l in longLines[0]:
+        if medianX < int(linesBaseline[l].split(' ')[0].split(',')[0]):
+            linesBaseline[l] = str(int(medianX)) + ',' + linesBaseline[l].split(' ')[0].split(',')[1] + ' ' + linesBaseline[l]
+            linesCoords[l] =  str(int(medianX)) + ',' + linesCoords[l].split(' ')[0].split(',')[1] + ' ' + linesCoords[l] + ' ' + str(int(medianX)) + ',' + linesCoords[l].split(' ')[-1].split(',')[1]
+
     for line in p.textRegion[textRegionIdx].findall("manuscript:TextLine", p.ns):
-        line[1].attrib['points'] = str(textRegionPoints[0][0])+ ',' + line[1].attrib['points'].split(' ')[0].split(',')[1] + ' ' + line[1].attrib['points']
+        i = int(re.findall(r'\d+', line.get("custom"))[0])
+        line[1].attrib['points'] = linesBaseline[i]
+        line[0].attrib['points'] = linesCoords[i]
 
 def computeInterDistance(textRegionIdx, p): # not currently used
     # typical interline distance based on long lines only
@@ -194,13 +192,14 @@ def computeInterDistance(textRegionIdx, p): # not currently used
     return interDistance
 
 
-# p = XmlParser('./data/xml-sample/old_24_BERGAMO_08.xml')
+# p = XmlParser('./data/xml-sample/24_BERGAMO_07.xml')
 # root = p.root
 # p.findTextRegion()
-#
 # evaluateTextRegions(p)
+# textRegionIdx = 0
 # for textRegionIdx in range(len(p.textRegion)):
 #     mergeCommentLines(textRegionIdx, p)
+#     extendBaselines(textRegionIdx, p)
 
 # plt.figure(0)
 # plt.hist(lineLengths, bins=100)
