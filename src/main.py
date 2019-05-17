@@ -121,14 +121,14 @@ def linesToMergeOrLabel(textRegionIdx, p):
     distPrevLongLine = []
     for lineIdx in linesToMerge:
         if lineIdx < longLines[0][0]:
-            idxPrevLongLine.append(None)
+            idxPrevLongLine.append(longLines[0][0])
             distPrevLongLine.append(verticalBorderLength)
         else:
             idxPrevLongLine.append(longLines[0][np.argmax(longLines[0] > lineIdx) - 1])
             distPrevLongLine.append(np.abs(lineYCoords[lineIdx] - lineYCoords[idxPrevLongLine[-1]]))
 
         if lineIdx > longLines[0][-1]:
-            idxNextLongLine.append(None)
+            idxNextLongLine.append(longLines[0][-1])
             distNextLongLine.append(verticalBorderLength)
         else:
             idxNextLongLine.append(longLines[0][np.argmax(longLines[0] > lineIdx)])
@@ -136,11 +136,12 @@ def linesToMergeOrLabel(textRegionIdx, p):
 
     idxMerge = [idxPrevLongLine[i] if distPrevLongLine[i] < distNextLongLine[i] else idxNextLongLine[i] for i in range(len(distNextLongLine))]
 
-    for i in range(len(idxMerge)):
-        if lineXCoords[linesToMerge[i]][1] > lineXCoords[idxMerge[i]][0]:
-            linesToMerge[i] = None
-            idxMerge[i] = None
-            linesToLabel.append(linesToMerge[i])
+    if len(idxMerge) > 0:
+        for i in range(len(idxMerge)):
+            if lineXCoords[linesToMerge[i]][1] > lineXCoords[idxMerge[i]][0]:
+                linesToMerge[i] = None
+                idxMerge[i] = None
+                linesToLabel.append(linesToMerge[i])
 
     linesToMerge = [line for line in linesToMerge if line is not None]
     idxMerge = [line for line in idxMerge if line is not None]
@@ -156,11 +157,14 @@ def mergeCommentLines(textRegionIdx, p): # merges small lines to long lines and 
 
     linesToRemove = []
     for l in range(len(idxMerge)):
-        # TODO merge coordinates
-        # linesCoords[idxMerge[l]] =
+        # merge coordinates
+        str1 = " ".join(linesCoords[linesToMerge[l]][0:round(len(linesCoords[linesToMerge[l]].split(' '))/2)])
+        str2 = " ".join(linesCoords[linesToMerge[l]][round(len(linesCoords[linesToMerge[l]].split(' '))/2)+1:-1])
+        linesCoords[idxMerge[l]] = str1 + " " +linesCoords[idxMerge[l]] + " " + str2
 
         # merge baselines
         linesBaseline[idxMerge[l]] = linesBaseline[linesToMerge[l]] + " " +linesBaseline[idxMerge[l]]
+
         # add short merged lines to a list to be removed
         linesToRemove.append(linesToMerge[l])
     # print('linesToMerge', linesToMerge)
@@ -180,7 +184,6 @@ def mergeCommentLines(textRegionIdx, p): # merges small lines to long lines and 
 def extendBaselines(textRegionIdx, p): # not currently used
     textRegionPoints = getTextRegionInfo(textRegionIdx, p)
     for line in p.textRegion[textRegionIdx].findall("manuscript:TextLine", p.ns):
-        # line[0].attrib['points'] = str(textRegionPoints[0][0])+ ',' + line[0].attrib['points'].split(' ')[0].split(',')[1] + ' ' + line[0].attrib['points'] # line[0] for the coords, line[1] for the baseline
         line[1].attrib['points'] = str(textRegionPoints[0][0])+ ',' + line[1].attrib['points'].split(' ')[0].split(',')[1] + ' ' + line[1].attrib['points']
 
 def computeInterDistance(textRegionIdx, p): # not currently used
@@ -191,7 +194,13 @@ def computeInterDistance(textRegionIdx, p): # not currently used
     return interDistance
 
 
-
+# p = XmlParser('./data/xml-sample/new_493_PARIS_01.xml')
+# root = p.root
+# p.findTextRegion()
+#
+# evaluateTextRegions(p)
+# for textRegionIdx in range(len(p.textRegion)):
+#     mergeCommentLines(textRegionIdx, p)
 
 # plt.figure(0)
 # plt.hist(lineLengths, bins=100)

@@ -7,7 +7,7 @@ class XmlParser:
 
     def __init__(self, document: str):
         print("Init XML Parser")
-        #self.doc = ET.parse(document)
+        # self.doc = ET.parse(document)
         self.doc = ET.ElementTree(ET.fromstring(document))
         self.root = self.doc.getroot()
 
