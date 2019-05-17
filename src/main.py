@@ -158,8 +158,8 @@ def mergeCommentLines(textRegionIdx, p): # merges small lines to long lines and 
     linesToRemove = []
     for l in range(len(idxMerge)):
         # merge coordinates
-        str1 = " ".join(linesCoords[linesToMerge[l]][0:round(len(linesCoords[linesToMerge[l]].split(' '))/2)])
-        str2 = " ".join(linesCoords[linesToMerge[l]][round(len(linesCoords[linesToMerge[l]].split(' '))/2)+1:-1])
+        str1 = " ".join(linesCoords[linesToMerge[l]].split(' ')[0:round(len(linesCoords[linesToMerge[l]].split(' '))/2)])
+        str2 = " ".join(linesCoords[linesToMerge[l]].split(' ')[round(len(linesCoords[linesToMerge[l]].split(' '))/2):])
         linesCoords[idxMerge[l]] = str1 + " " +linesCoords[idxMerge[l]] + " " + str2
 
         # merge baselines
@@ -194,7 +194,7 @@ def computeInterDistance(textRegionIdx, p): # not currently used
     return interDistance
 
 
-# p = XmlParser('./data/xml-sample/new_493_PARIS_01.xml')
+# p = XmlParser('./data/xml-sample/old_24_BERGAMO_08.xml')
 # root = p.root
 # p.findTextRegion()
 #

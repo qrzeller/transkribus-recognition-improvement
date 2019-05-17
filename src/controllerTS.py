@@ -3,7 +3,7 @@ from src.transkribusServer import TrtanskribusServer
 from src.xmlParser import XmlParser
 
 credentials = {'user': "quentin.zeller@etu.unige.ch", 'password': "pttptt3*"}
-documentsInfo = {'colId': 35875, 'docId': 163267}
+documentsInfo = {'colId': 35875, 'docId': 163691}
 
 ts = TrtanskribusServer(credentials['user'], credentials['password'], colId=documentsInfo['colId'])
 docList, docId = ts.list_documents()
