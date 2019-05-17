@@ -83,7 +83,7 @@ def getLinesInfo(textRegionIdx, p):
 def getShortLongLines(textRegionIdx, p, factor = 2):
     _, lineLengths, _, _ = getLinesInfo(textRegionIdx, p)
     shortLines = np.where(np.array(lineLengths) < int(max(lineLengths)/factor)) # lines too short
-    longLines = np.where(np.array(lineLengths) > int(max(lineLengths) / factor)) # long lines
+    longLines = np.where(np.array(lineLengths) > int(max(lineLengths)/factor)) # long lines
 
     return shortLines, longLines
 
@@ -175,9 +175,10 @@ def extendBaselines(textRegionIdx, p):
 
     medianX = np.percentile([xPoint[0] for xPoint in lineXCoords], 50)
     for l in longLines[0]:
-        if medianX < int(linesBaseline[l].split(' ')[0].split(',')[0]):
-            linesBaseline[l] = str(int(medianX)) + ',' + linesBaseline[l].split(' ')[0].split(',')[1] + ' ' + linesBaseline[l]
-            linesCoords[l] =  str(int(medianX)) + ',' + linesCoords[l].split(' ')[0].split(',')[1] + ' ' + linesCoords[l] + ' ' + str(int(medianX)) + ',' + linesCoords[l].split(' ')[-1].split(',')[1]
+        k = list(linesBaseline.keys())[l]
+        if medianX < int(linesBaseline[k].split(' ')[0].split(',')[0]):
+            linesBaseline[k] = str(int(medianX)) + ',' + linesBaseline[k].split(' ')[0].split(',')[1] + ' ' + linesBaseline[k]
+            linesCoords[k] =  str(int(medianX)) + ',' + linesCoords[k].split(' ')[0].split(',')[1] + ' ' + linesCoords[k] + ' ' + str(int(medianX)) + ',' + linesCoords[k].split(' ')[-1].split(',')[1]
 
     for line in p.textRegion[textRegionIdx].findall("manuscript:TextLine", p.ns):
         i = int(re.findall(r'\d+', line.get("custom"))[0])
@@ -192,7 +193,7 @@ def computeInterDistance(textRegionIdx, p): # not currently used
     return interDistance
 
 
-# p = XmlParser('./data/xml-sample/24_BERGAMO_07.xml')
+# p = XmlParser('./data/xml-sample/old_24_BERGAMO_08.xml')
 # root = p.root
 # p.findTextRegion()
 # evaluateTextRegions(p)
