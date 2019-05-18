@@ -1,42 +1,6 @@
 import os
 
 from TranskribusPyClient.src.TranskribusPyClient import client
-import lxml.etree as etree
-
-"""
-s = client.TranskribusClient()
-
-user = "quentin.zeller@etu.unige.ch"
-password = "pttptt3*"
-
-s.auth_login(user, password)
-colId = 35875
-ntic_col = s.listDocsByCollectionId(colId)
-
-print("Document accessible : ")
-for i in ntic_col:
-    print(i['title'], end=', ')
-print("\r\n")
-
-download_directory = "../data/collection/"
-# download images
-#s.download_document(colId,ntic_col[0]['docId'], download_directory+"%d"%colId)
-
-docId = ntic_col[0]['docId']
-#dom = s.getDocByIdAsXml(colId, docId, nrOfTranscripts=1 ) # number of trankripts to receive per page
-
-# Transcription
-#doc1 = etree.tostring(dom, pretty_print=True).decode("utf-8")
-
-#s.download_collection(colId,download_directory+"%d-collection"%colId, bNoImage=True)
-
-
-trp = s.getDocById(colId, docId, nrOfTranscripts=1)
-
-pageList = trp["pageList"]
-
-"""
-
 
 class TrtanskribusServer():
 
@@ -96,27 +60,3 @@ class TrtanskribusServer():
 
     def logout(self):
         self.s.auth_logout()
-
-
-# user = "quentin.zeller@etu.unige.ch"
-# password = "pttptt3*"
-# ts = TrtanskribusServer(user, password, colId = 35875)
-# docList, docId = ts.list_documents()
-# # parse doc from the server (specific document)
-# pages = ts.get_documents(docId[0])
-#
-# npage = 8
-# p_test = pages[npage]
-#
-# p_test = p_test.replace("quentintest", "banane")
-# somecomment = "<!--" \
-#               " helloworld " \
-#               "-->"
-# p_test = p_test + somecomment
-# file = open("testfile.xml","w")
-# file.write(p_test)
-# file.close()
-#
-# response = ts.uploadDocument(docId[0],npage+1,p_test)
-
-#s.auth_logout()
