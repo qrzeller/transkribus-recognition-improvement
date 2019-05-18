@@ -100,16 +100,16 @@ def getShortLongLines(textRegionIdx, p, factor = 2):
 
     return shortLines, longLines
 
-def farFromBorderLines(textRegionIdx, p, factor = 4):
+def farFromBorderLines(textRegionIdx, p, factor = 7):
     _, lineLengths, lineDistFromLeft, _ = getLinesInfo(textRegionIdx, p)
     problemLinesDistance = np.where(np.array(lineDistFromLeft) > int(max(lineLengths)/factor)) # lines too far away from the left textborder
 
     return problemLinesDistance
 
-def linesToMergeOrLabel(textRegionIdx, p):
+def linesToMergeOrLabel(textRegionIdx, p, factorL, factorD):
 
-    shortLines, longLines = getShortLongLines(textRegionIdx, p, factor=2)
-    farLines = farFromBorderLines(textRegionIdx, p, factor=4)
+    shortLines, longLines = getShortLongLines(textRegionIdx, p, factor=factorL)
+    farLines = farFromBorderLines(textRegionIdx, p, factor=factorD)
     linesToLabel = list(np.intersect1d(shortLines, farLines))
     linesToMerge = list(np.setdiff1d(shortLines, farLines))
 
@@ -150,7 +150,7 @@ def linesToMergeOrLabel(textRegionIdx, p):
     return linesToMerge, idxMerge, linesToLabel
 
 def mergeCommentLines(textRegionIdx, p): # merges small lines to long lines and removes the smaller line
-    linesToMerge, idxMerge, linesToLabel = linesToMergeOrLabel(textRegionIdx, p)
+    linesToMerge, idxMerge, linesToLabel = linesToMergeOrLabel(textRegionIdx, p, 2, 7)
     if len(idxMerge) > len(set(idxMerge)):
         print('Attention: long line matches multiple merges')
 
@@ -206,7 +206,7 @@ def computeInterDistance(textRegionIdx, p): # not currently used
     return interDistance
 
 
-# p = XmlParser('./data/xml-sample/469_PARIS_01.xml')
+# p = XmlParser('./data/xml-sample/old_24_BERGAMO_08.xml')
 # root = p.root
 # p.findTextRegion()
 # evaluateTextRegions(p)
@@ -214,7 +214,7 @@ def computeInterDistance(textRegionIdx, p): # not currently used
 # for textRegionIdx in range(len(p.textRegion)):
 #     mergeCommentLines(textRegionIdx, p)
 #     extendBaselines(textRegionIdx, p)
-#
+
 # _, lineLengths, lineDistFromLeft, _ = getLinesInfo(textRegionIdx, p)
 # plt.figure(0)
 # plt.hist(lineLengths, bins=100)
