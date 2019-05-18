@@ -22,8 +22,21 @@ def getXYPoints(stringList):
 def getTextRegionInfo(textRegionIdx, p):
     textRegionCoords = p.textRegion[textRegionIdx].findall("manuscript:Coords", p.ns)[0].attrib['points']
     textRegionPoints = getXYPoints(textRegionCoords)
-    verticalBorderLength = np.abs(textRegionPoints[0][1] - textRegionPoints[1][1]) # use only y-points, the textbox is rectangular
-    horizontalBorderLength = np.abs(textRegionPoints[0][0] - textRegionPoints[-1][0]) # use only x-points, the textbox is rectangular
+    verticalBorderLength1 = np.abs(textRegionPoints[0][1] - textRegionPoints[1][1]) # use only y-points, the textbox is rectangular
+    verticalBorderLength2 = np.abs(textRegionPoints[0][1] - textRegionPoints[2][1])
+    if verticalBorderLength1 > verticalBorderLength2:
+        verticalBorderLength = verticalBorderLength1
+    else :
+        verticalBorderLength = verticalBorderLength2
+
+    horizontalBorderLength1 = np.abs(textRegionPoints[0][0] - textRegionPoints[1][0])
+    horizontalBorderLength2 = np.abs(textRegionPoints[0][0] - textRegionPoints[2][0])
+    if horizontalBorderLength1 > horizontalBorderLength2:
+        horizontalBorderLength = horizontalBorderLength1
+    else:
+        horizontalBorderLength = horizontalBorderLength2
+        # use only x-points, the textbox is rectangular
+
     return textRegionPoints, verticalBorderLength, horizontalBorderLength
 
 def evaluateTextRegions(p): # remove text regions that are too small
@@ -41,7 +54,7 @@ def evaluateTextRegions(p): # remove text regions that are too small
     # Remove textbox that is too small on both x and y dimensions
     hMax = max(horizontalBorders)
     vMax = max(verticalBorders)
-    margin = 0.9
+    margin = 0.8
     for i in range(len(p.textRegion)):
         if (verticalBorders[i] < margin*vMax) & (horizontalBorders[i] < margin*hMax):
             p.removeTR(p.textRegion[i])
@@ -88,8 +101,8 @@ def getShortLongLines(textRegionIdx, p, factor = 2):
     return shortLines, longLines
 
 def farFromBorderLines(textRegionIdx, p, factor = 4):
-    _, _, lineDistFromLeft, _ = getLinesInfo(textRegionIdx, p)
-    problemLinesDistance = np.where(np.array(lineDistFromLeft) > int(max(lineDistFromLeft)/factor)) # lines too far away from the left textborder
+    _, lineLengths, lineDistFromLeft, _ = getLinesInfo(textRegionIdx, p)
+    problemLinesDistance = np.where(np.array(lineDistFromLeft) > int(max(lineLengths)/factor)) # lines too far away from the left textborder
 
     return problemLinesDistance
 
@@ -193,7 +206,7 @@ def computeInterDistance(textRegionIdx, p): # not currently used
     return interDistance
 
 
-# p = XmlParser('./data/xml-sample/old_24_BERGAMO_08.xml')
+# p = XmlParser('./data/xml-sample/469_PARIS_01.xml')
 # root = p.root
 # p.findTextRegion()
 # evaluateTextRegions(p)
