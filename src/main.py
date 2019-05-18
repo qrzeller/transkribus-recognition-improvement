@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import re
 from collections import OrderedDict
 
-# Should find ALL textRegions and keep only the biggest one as main text region
+# Should find ALL textRegions and keep only the biggest ones
 # remove all lines outside of the main text region
 # calibrate interline distance as the distance between longest lines
 # for all lines inside the text box, compute the line length, line distance to the left text box border
@@ -201,11 +201,13 @@ def computeInterDistance(textRegionIdx, p): # not currently used
 # for textRegionIdx in range(len(p.textRegion)):
 #     mergeCommentLines(textRegionIdx, p)
 #     extendBaselines(textRegionIdx, p)
-
+#
+# _, lineLengths, lineDistFromLeft, _ = getLinesInfo(textRegionIdx, p)
 # plt.figure(0)
 # plt.hist(lineLengths, bins=100)
 # plt.title("Histogram of baseline lengths")
 # plt.show()
+#
 #
 # plt.figure(1)
 # plt.hist(lineDistFromLeft, bins=100)

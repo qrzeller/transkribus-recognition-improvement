@@ -16,17 +16,6 @@ class XmlParser:
         self.textRegion = self.root.findall("manuscript:Page/manuscript:TextRegion", self.ns) #[0]
         self.parentTR = self.root.findall("manuscript:Page", self.ns)[0] # assumme one page
 
-    # def processTextLine(self):
-    #     self.textRegionCoords = self.textRegion.findall("bergamo:Coords", self.ns)[0].attrib['points']
-    #     self.linesCoords = OrderedDict()
-    #     self.linesBaseline = OrderedDict()
-    #     for line in self.textRegion.findall("bergamo:TextLine", self.ns):
-    #         self.linesCoords[line.get("id")] = line[0].attrib['points'] # line[0] for the coords, line[1] for the baseline
-    #         self.linesBaseline[line.get("id")] = line[1].attrib['points']  # line[0] for the coords, line[1] for the baseline
-    #         # print(line[0].attrib['points'])
-    #         # TODO
-
-
     def getChildByName(self,root: ET.ElementTree,  node: str) -> ET.ElementTree:
         return root.get(node)
 
