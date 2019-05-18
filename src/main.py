@@ -149,7 +149,7 @@ def linesToMergeOrLabel(textRegionIdx, p, factorL, factorD):
 
     return linesToMerge, idxMerge, linesToLabel
 
-def mergeCommentLines(textRegionIdx, p): # merges small lines to long lines and removes the smaller line
+def mergeCommentLines(textRegionIdx, p, annotation): # merges small lines to long lines and removes the smaller line
     linesToMerge, idxMerge, linesToLabel = linesToMergeOrLabel(textRegionIdx, p, 2, 7)
     if len(idxMerge) > len(set(idxMerge)):
         print('Attention: long line matches multiple merges')
@@ -179,7 +179,7 @@ def mergeCommentLines(textRegionIdx, p): # merges small lines to long lines and 
     for line in p.textRegion[textRegionIdx].findall("manuscript:TextLine", p.ns):
         i = int(re.findall(r'\d+', line.get("custom"))[0])
         if i in linesToLabel:
-            line.set("custom", line.get("custom") + 'structure {type:footnote;}')
+            line.set("custom", line.get("custom") + 'structure {type:' + annotation + ';}')
 
 def extendBaselines(textRegionIdx, p):
     _, _, _, lineXCoords = getLinesInfo(textRegionIdx, p)

@@ -45,7 +45,7 @@ class TrtanskribusServer():
     def list_documents(self, colId = None):
         if colId is None: colId=self.current_Collection
         print("list collection : ", colId)
-        docList = self.s.listDocsByCollectionId(colId)
+        docList = self.s.listDocsByCollectionId(int(colId))
         docIDs = []
         print("Document accessible : (return docList, docIDs)")
         for i in docList:

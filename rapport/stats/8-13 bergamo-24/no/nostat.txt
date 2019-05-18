@@ -1,0 +1,7 @@
+p1 : 12 initiales, 2 lignes non principales
+p2 : 0 initiales, 10 lignes non principales, 3 bad textbox
+p3 : 7 initiales, 4 lignes non principales, 2 bad textbox
+p4 : 9 initiales (3 non), 1 ligne non principale, 2 bad textbox
+p5 : 0 initiales. 3 lnp, 1 btb
+p6 : 14 init (1 non), 3 lnp, 2 btb
+total : 42 initiales, 23 lnp, 10 btb

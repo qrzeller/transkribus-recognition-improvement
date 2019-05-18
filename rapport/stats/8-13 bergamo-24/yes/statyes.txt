@@ -1,0 +1,6 @@
+p1 : ok
+p2 : 2 init, 3 ftnote
+p3 : ok
+p4 : ok
+p5 : ok
+p6 : ok
