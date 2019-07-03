@@ -7,41 +7,39 @@ import re
 from collections import OrderedDict
 
 # Should find ALL textRegions and keep only the biggest ones
-# remove all lines outside of the main(s) text region
-# calibrate interline distance as the distance between longest lines (however, this distance is not currently used thereafter)
+# remove all lines outside of the main text region
+# calibrate interline distance as the distance between longest lines
 # for all lines inside the text box, compute the line length, line distance to the left text box border
 
 # Problematic lines: the very short lines | the lines away from the textbox border | lines that are too close to long lines
 # lines that are short AND close to the textbox border should be merged to the closest one on the Ox axis
 # other problematic lines should be removed
 
-# Extract XY coordinates from a list of points as used in the XML file
 def getXYPoints(stringList):
     result =[[int(point) for point in pair.split(',')] for pair in stringList.split(' ')]
     return result
 
-#
 def getTextRegionInfo(textRegionIdx, p):
     textRegionCoords = p.textRegion[textRegionIdx].findall("manuscript:Coords", p.ns)[0].attrib['points']
     textRegionPoints = getXYPoints(textRegionCoords)
     verticalBorderLength1 = np.abs(textRegionPoints[0][1] - textRegionPoints[1][1]) # use only y-points, the textbox is rectangular
-    verticalBorderLength2 = np.abs(textRegionPoints[0][1] - textRegionPoints[2][1]) # compute 2 possible distances as the order of the box points is not always the same
+    verticalBorderLength2 = np.abs(textRegionPoints[0][1] - textRegionPoints[2][1])
     if verticalBorderLength1 > verticalBorderLength2:
         verticalBorderLength = verticalBorderLength1
     else :
         verticalBorderLength = verticalBorderLength2
 
-    horizontalBorderLength1 = np.abs(textRegionPoints[0][0] - textRegionPoints[1][0]) # use only x-points, the textbox is rectangular
-    horizontalBorderLength2 = np.abs(textRegionPoints[0][0] - textRegionPoints[2][0]) # compute 2 possible distances as the order of the box points is not always the same
+    horizontalBorderLength1 = np.abs(textRegionPoints[0][0] - textRegionPoints[1][0])
+    horizontalBorderLength2 = np.abs(textRegionPoints[0][0] - textRegionPoints[2][0])
     if horizontalBorderLength1 > horizontalBorderLength2:
         horizontalBorderLength = horizontalBorderLength1
     else:
         horizontalBorderLength = horizontalBorderLength2
+        # use only x-points, the textbox is rectangular
 
     return textRegionPoints, verticalBorderLength, horizontalBorderLength
 
-# Remove text regions that are too small
-def evaluateTextRegions(p, margin = 0.8):
+def evaluateTextRegions(p): # remove text regions that are too small
     # Get info about text region boxes
     verticalBorders = []
     horizontalBorders = []
@@ -49,33 +47,34 @@ def evaluateTextRegions(p, margin = 0.8):
     if len(p.textRegion) == 0: return
 
     for i in range(len(p.textRegion)):
-        _, verticalBorderLength, horizontalBorderLength = getTextRegionInfo(i, p)
+        textRegionPoints, verticalBorderLength, horizontalBorderLength = getTextRegionInfo(i, p)
         verticalBorders.append(verticalBorderLength)
         horizontalBorders.append(horizontalBorderLength)
 
     # Remove textbox that is too small on both x and y dimensions
     hMax = max(horizontalBorders)
     vMax = max(verticalBorders)
+    margin = 0.8
     for i in range(len(p.textRegion)):
         if (verticalBorders[i] < margin*vMax) & (horizontalBorders[i] < margin*hMax):
             p.removeTR(p.textRegion[i])
 
-# Extract lineboxes coords and baseline points
 def getLinesPoints(textRegionIdx, p):
+    # Get coords and baseline point info about text lines
     linesCoords = OrderedDict()
     linesBaseline = OrderedDict()
     for line in p.textRegion[textRegionIdx].findall("manuscript:TextLine", p.ns):
         i = int(re.findall(r'\d+', line.get("custom"))[0])
-        linesCoords[i] = line[0].attrib['points'] # line[0] for the coords, line[1] for the baseline
+        linesCoords[i] = line[0].attrib['points'] # line[0] for the coords, line[1] for the baseline; line.get("id")
         linesBaseline[i] = line[1].attrib['points']  # line[0] for the coords, line[1] for the baseline
 
     return linesCoords, linesBaseline
 
-# Compute lengths of baselines
-# Compute baseline distance wrt the median lines' start or the left textbox border
 def getLinesInfo(textRegionIdx, p):
     textRegionPoints, verticalBorderLength, _ = getTextRegionInfo(textRegionIdx, p)
     _, linesBaseline = getLinesPoints(textRegionIdx, p)
+    # Compute lengths of baselines, check the histogram, mark the very short ones as problematic
+    # Compute baseline distance wrt the left textbox border
 
     lineYCoords = []     # needed to compute interline distance further on
     lineXCoords = []
@@ -90,11 +89,10 @@ def getLinesInfo(textRegionIdx, p):
     lineDistFromLeft = []
     medianX = np.median([xPoint[0] for xPoint in lineXCoords])
     for i in range(len(lineLengths)):
-        lineDistFromLeft.append(np.abs(medianX - lineXCoords[i][0])) # alternatively use textRegionPoints[0][0] for the distance wrt left textbox border
+        lineDistFromLeft.append(np.abs(medianX - lineXCoords[i][0])) # textRegionPoints[0][0]
 
     return lineYCoords, lineLengths, lineDistFromLeft, lineXCoords
 
-# Mark lines that are shorter than half the max length as problematic (change the factor value for other thresholds)
 def getShortLongLines(textRegionIdx, p, factor = 2):
     _, lineLengths, _, _ = getLinesInfo(textRegionIdx, p)
     shortLines = np.where(np.array(lineLengths) < int(max(lineLengths)/factor)) # lines too short
@@ -102,15 +100,12 @@ def getShortLongLines(textRegionIdx, p, factor = 2):
 
     return shortLines, longLines
 
-# Mark lines that are too far away from the median start point (alternatively the left textborder)
 def farFromBorderLines(textRegionIdx, p, factor = 7):
     _, lineLengths, lineDistFromLeft, _ = getLinesInfo(textRegionIdx, p)
-    problemLinesDistance = np.where(np.array(lineDistFromLeft) > int(max(lineLengths)/factor))
+    problemLinesDistance = np.where(np.array(lineDistFromLeft) > int(max(lineLengths)/factor)) # lines too far away from the left textborder
 
     return problemLinesDistance
 
-# Extract lines that need to be merged or labeled
-# For the short lines that need to be merged, match them to long lines
 def linesToMergeOrLabel(textRegionIdx, p, factorL, factorD):
 
     shortLines, longLines = getShortLongLines(textRegionIdx, p, factor=factorL)
@@ -154,10 +149,8 @@ def linesToMergeOrLabel(textRegionIdx, p, factorL, factorD):
 
     return linesToMerge, idxMerge, linesToLabel
 
-# Merge small lines to long lines and then remove the small lines
-# Attach annotation tag to comment lines (lines to label)
-def mergeCommentLines(textRegionIdx, p, annotation):
-    linesToMerge, idxMerge, linesToLabel = linesToMergeOrLabel(textRegionIdx, p, 2, 7)  # factorLength = 2; factorDistance = 7
+def mergeCommentLines(textRegionIdx, p, annotation): # merges small lines to long lines and removes the smaller line
+    linesToMerge, idxMerge, linesToLabel = linesToMergeOrLabel(textRegionIdx, p, 2, 7)
     if len(idxMerge) > len(set(idxMerge)):
         print('Attention: long line matches multiple merges')
 
@@ -175,10 +168,6 @@ def mergeCommentLines(textRegionIdx, p, annotation):
 
         # add short merged lines to a list to be removed
         linesToRemove.append(linesToMerge[l])
-
-    # The following two lines were used to test if the information about interline distance to label lines would help... but it did not work
-    # _, commentLines = computeInterDistance(textRegionIdx, p, param = 0.15)
-    # linesToLabel = np.intersect1d(commentLines, linesToLabel)
 
     for line in p.textRegion[textRegionIdx].findall("manuscript:TextLine", p.ns):
         i = int(re.findall(r'\d+', line.get("custom"))[0])
@@ -209,19 +198,12 @@ def extendBaselines(textRegionIdx, p):
         line[1].attrib['points'] = linesBaseline[i]
         line[0].attrib['points'] = linesCoords[i]
 
-def computeInterDistance(textRegionIdx, p, param): # not currently used
+def computeInterDistance(textRegionIdx, p): # not currently used
     # typical interline distance based on long lines only
     _, longLines = getShortLongLines(textRegionIdx, p, factor = 2)
     lineYCoords, _, _, _  = getLinesInfo(textRegionIdx, p)
     interDistance = round(np.mean(np.diff([lineYCoords[i] for i in longLines[0]])))
-    middleLL = longLines[0][int(round(len(longLines[0])/2))]
-    distToMiddleLL = []
-    for line in range(len(lineYCoords)):
-        distToMiddleLL.append(np.abs(lineYCoords[line] - lineYCoords[middleLL]))
-
-    commentLines = np.where(np.mod(np.array(distToMiddleLL) + param*interDistance, interDistance) > 2*param*interDistance)
-
-    return interDistance, commentLines
+    return interDistance
 
 
 # p = XmlParser('./data/xml-sample/old_24_BERGAMO_08.xml')
@@ -244,7 +226,3 @@ def computeInterDistance(textRegionIdx, p, param): # not currently used
 # plt.hist(lineDistFromLeft, bins=100)
 # plt.title("Histogram of baseline distances from left textbox border")
 # plt.show()
-
-
-
-
